@@ -1,0 +1,27 @@
+{
+  "name": "Quản trị khu phố — KhuPhoSo",
+  "short_name": "Khu phố",
+  "description": "Quản lý nhân khẩu, hộ khẩu, đoàn thể, quỹ và địa chỉ số của khu phố.",
+  "lang": "vi",
+  "dir": "ltr",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f8fafc",
+  "theme_color": "#1e40af",
+  "categories": ["government", "productivity"],
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Nhân khẩu thường trú", "short_name": "Nhân khẩu", "url": "/nhan-khau/thuong-tru",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Sổ hộ khẩu", "short_name": "Hộ khẩu", "url": "/ho/thuong-tru",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Địa chỉ số", "short_name": "Bản đồ", "url": "/ban-do",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }] }
+  ]
+}

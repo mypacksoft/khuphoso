@@ -1,0 +1,22 @@
+# Dependencies
+node_modules/
+# Builds
+dist/
+build/
+*.tsbuildinfo
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+# Môi trường & bí mật — KHÔNG commit
+.env
+.env.*
+!.env.example
+# Dữ liệu người dùng tải lên
+data/
+# Hệ điều hành / IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

@@ -1,0 +1,195 @@
+@import "tailwindcss";
+
+/*
+ * Hệ thống thiết kế lấy nguyên từ app cũ (`khu-phố-smart_1`).
+ *
+ * Nền sáng, xanh dương hành chính, thẻ `rounded-2xl`, cỡ chữ chủ đạo `text-xs`.
+ * Mật độ thông tin cao hơn khoảng trắng — cán bộ cần thấy nhiều dòng cùng lúc.
+ */
+
+@theme {
+  --font-serif: "Times New Roman", Times, Georgia, serif;
+
+  /* Xanh dương hành chính — chốt theo mã màu app cũ dùng thật */
+  --color-hc: #0055cc;        /* nền mục điều hướng đang chọn */
+  --color-hc-chu: #0d5bd7;    /* chữ mục con đang chọn */
+  --color-hc-nen: #e8f1ff;    /* nền mục con đang chọn */
+  --color-dau-bang: #f8f9ff;  /* nền <thead> — xanh rất nhạt, không phải trắng */
+}
+
+@layer base {
+  html {
+    color-scheme: light;
+    /*
+     * Cỡ chữ gốc 17px (mặc định trình duyệt là 16px) — cán bộ lớn tuổi phản ánh
+     * giao diện cũ chữ nhỏ khó đọc. Nâng gốc thì MỌI cỡ chữ và khoảng cách tính
+     * theo `rem` (text-xs, padding thẻ…) to lên đồng loạt, giữ nguyên tỉ lệ bố cục.
+     * Tham khảo app cũ "Khu phố thông minh" dùng cỡ chữ lớn hơn, dễ nhìn.
+     */
+    font-size: 17px;
+  }
+
+  body {
+    background: #f8fafc; /* slate-50 */
+    color: #0f172a;
+    font-family: ui-sans-serif, system-ui, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /*
+   * Trên thiết bị cảm ứng, ô nhập phải từ 16px trở lên.
+   *
+   * iOS Safari tự PHÓNG TO trang khi chạm vào ô nhập có cỡ chữ dưới 16px, và không
+   * thu lại sau khi rời ô — người dùng phải tự chụm tay thu nhỏ, nhập liệu trở nên
+   * rất khó chịu. Giao diện này dùng cỡ chữ nhỏ để tăng mật độ thông tin nên phải
+   * ghi đè riêng cho màn hình cảm ứng.
+   *
+   * Dùng !important vì phải thắng lớp tiện ích cỡ chữ của Tailwind — có chủ đích.
+   */
+  @media (pointer: coarse) {
+    input:not([type='checkbox']):not([type='radio']),
+    select,
+    textarea {
+      font-size: 16px !important;
+    }
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 5px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+    background-clip: content-box;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+}
+
+@layer utilities {
+  /* Thanh cuộn mảnh trong popup thông báo và danh sách trong thẻ */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 5px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #e2e8f0;
+    border: none;
+  }
+
+  .animate-fadeIn {
+    animation: fadeIn 0.2s ease-out;
+  }
+  .animate-slideIn {
+    animation: slideIn 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ── Bản đồ Leaflet ────────────────────────────────────────────────────────
+   Giảm sáng nền bản đồ còn 80% để ghim hộ nổi lên trên. Lấy nguyên từ app cũ:
+   với bản đồ vệ tinh Việt Nam, nền quá sáng làm ghim màu bị chìm mất. */
+.leaflet-tile,
+.leaflet-image-layer {
+  filter: brightness(0.8) contrast(1) saturate(1.1) !important;
+  image-rendering: -webkit-optimize-contrast !important;
+  image-rendering: crisp-edges !important;
+}
+
+.leaflet-container {
+  font-family: ui-sans-serif, system-ui, sans-serif !important;
+
+  /*
+   * Leaflet đặt z-index tới 400–800 cho các lớp bên trong nó, nhưng bản thân
+   * `.leaflet-container` không tạo ngữ cảnh xếp lớp — nên những lớp đó leo thẳng
+   * lên gốc trang và ĐÈ LÊN hộp thoại (z-index 100). Triệu chứng: mở hộp thoại
+   * xác minh vị trí thì bản đồ vẫn nằm trên, che mất tiêu đề hộp thoại.
+   *
+   * `isolation: isolate` nhốt toàn bộ z-index của Leaflet vào trong khung bản đồ.
+   */
+  isolation: isolate;
+
+  /* Nền mặc định của Leaflet là #ddd — ô chưa tải xong hiện ra xám xịt giữa bản
+     đồ sáng. Đặt nền cùng tông với tile để lúc tải trông liền một mảng. */
+  background: #f4f2ee;
+}
+
+/* Tile Esri (lớp vệ tinh) không có ô cho vùng chưa phủ; nền tối sẽ lộ ra ở rìa */
+.leaflet-tile-container img {
+  image-rendering: -webkit-optimize-contrast;
+}
+
+/* ── In giấy ───────────────────────────────────────────────────────────────
+   Khi in một văn bản (sổ hộ khẩu, phiếu thu), chỉ in đúng phần văn bản đó chứ
+   không in cả thanh bên và thanh trên. Dùng `visibility` thay vì `display` để
+   phần tử vẫn giữ chỗ trong luồng, nhờ vậy ngắt trang không bị vỡ. */
+@media print {
+  .khong-in {
+    display: none !important;
+  }
+
+  body {
+    background: #fff;
+  }
+
+  body:has(.in-duoc) * {
+    visibility: hidden;
+  }
+  body:has(.in-duoc) .in-duoc,
+  body:has(.in-duoc) .in-duoc * {
+    visibility: visible;
+  }
+  body:has(.in-duoc) .in-duoc {
+    position: absolute;
+    inset: 0 auto auto 0;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    border: none !important;
+    box-shadow: none !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  .in-duoc table {
+    page-break-inside: auto;
+  }
+  .in-duoc tr {
+    page-break-inside: avoid;
+  }
+  .in-duoc thead {
+    display: table-header-group;
+  }
+}
+
+@page {
+  size: A4;
+  margin: 15mm 14mm;
+}
