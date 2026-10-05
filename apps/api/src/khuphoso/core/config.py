@@ -30,6 +30,10 @@ class Settings(BaseSettings):
     # chức năng định vị tự động báo lỗi rõ ràng chứ không âm thầm dùng nguồn khác.
     google_maps_api_key: str = ""
 
+    # Key kích hoạt phần mềm — nhận được sau khi đăng ký tại khuphoso.vn/dang-ky-repo.
+    # Chưa có key hợp lệ thì API chặn mọi nghiệp vụ. Xem khuphoso.core.giay_phep.
+    license_key: str = ""
+
     @property
     def database_url(self) -> str:
         """Kết nối của ứng dụng — ưu tiên tài khoản không phải superuser."""

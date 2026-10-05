@@ -133,9 +133,6 @@ export function TaiKhoan() {
                 </span>
               </div>
             ))}
-            {user.is_platform_admin && (
-              <Chip mau="amber">QUẢN TRỊ NỀN TẢNG</Chip>
-            )}
           </div>
         </Card>
 

@@ -1,7 +1,6 @@
-"""KhuPhoSo API — bản cộng đồng (customer) cho một khu phố tự vận hành.
+"""KhuPhoSo API — phần mềm quản trị cho một khu phố tự vận hành.
 
-Bản này KHÔNG gồm phần nền tảng SaaS (onboarding, gói dịch vụ, thanh toán, quản trị
-nền tảng). Mỗi khu phố tự cài trên máy chủ riêng; dữ liệu nằm trong database riêng.
+Khu phố tự cài trên máy chủ riêng; toàn bộ dữ liệu nằm trong database của khu phố đó.
 """
 
 import asyncio
@@ -9,12 +8,15 @@ from contextlib import asynccontextmanager
 from datetime import datetime, timedelta, timezone
 
 import structlog
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from sqlalchemy import text
 
 from khuphoso.core.config import get_settings
 from khuphoso.core.database import PlatformSession, dong_tat_ca
+from khuphoso.core.deps import slug_tu_host
+from khuphoso.core.giay_phep import kiem_tra
 from khuphoso.modules.admin.router import router as hethong_router
 from khuphoso.modules.admin.taikhoan import router as taikhoan_router
 from khuphoso.modules.auth.router import router as auth_router
@@ -39,6 +41,7 @@ from khuphoso.modules.lodging.router import router as lodging_router
 from khuphoso.modules.events.router import router as events_router
 from khuphoso.modules.portal.router import admin_router as cong_tt_router
 from khuphoso.modules.portal.router import router as portal_router
+from khuphoso.modules.khu_pho.router import router as khupho_router
 from khuphoso.modules.vanban.router import router as vanban_router
 
 settings = get_settings()
@@ -57,10 +60,47 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="KhuPhoSo API",
-    description="Nền tảng quản trị khu phố số — bản cộng đồng",
+    description="Phần mềm quản trị khu phố số",
     version="0.1.0",
     lifespan=lifespan,
 )
+
+# Đường được phép đi qua KỂ CẢ KHI chưa kích hoạt: kiểm tra sức khoẻ, lấy tên khu
+# phố và trạng thái giấy phép để giao diện dựng được màn hình kích hoạt.
+_MIEN_TRU_GIAY_PHEP = (
+    "/health",
+    "/gio",
+    "/giay-phep/trang-thai",
+    "/khu-pho/hien-tai",
+    "/docs",
+    "/redoc",
+    "/openapi.json",
+)
+
+
+@app.middleware("http")
+async def chan_khi_chua_kich_hoat(request: Request, call_next):
+    """Chưa có giấy phép hợp lệ thì chặn mọi nghiệp vụ, trả 403 kèm lý do.
+
+    Đặt làm middleware ĐẦU TIÊN được khai báo (nên là lớp TRONG CÙNG) để lớp CORS
+    bọc bên ngoài vẫn gắn được header cho cả phản hồi 403 — nhờ vậy trình duyệt đọc
+    được lý do thay vì báo lỗi CORS.
+    """
+    path = request.url.path
+    if request.method == "OPTIONS" or path == "/" or any(
+        path == p or path.startswith(p + "/") for p in _MIEN_TRU_GIAY_PHEP
+    ):
+        return await call_next(request)
+
+    slug = slug_tu_host(request.headers.get("host", "")) or request.headers.get("x-tenant-slug")
+    tt = kiem_tra(slug)
+    if not tt["kich_hoat"]:
+        return JSONResponse(
+            status_code=403,
+            content={"detail": "PHAN_MEM_CHUA_KICH_HOAT", "giay_phep": tt},
+        )
+    return await call_next(request)
+
 
 app.add_middleware(
     CORSMiddleware,
@@ -98,6 +138,7 @@ app.include_router(lodging_router)
 app.include_router(events_router)
 app.include_router(portal_router)
 app.include_router(cong_tt_router)
+app.include_router(khupho_router)
 
 
 @app.get("/gio", tags=["system"])

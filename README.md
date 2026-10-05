@@ -1,9 +1,11 @@
-# Khu Phố Số — bản cộng đồng (self-host)
+# Khu Phố Số — phần mềm quản trị khu phố (self-host)
 
 > **Bớt giấy tờ, còn thời gian lo cho dân.**
-> Nền tảng quản trị khu phố số dành cho **Ban điều hành khu phố & Tổ dân phố**, kèm **Cổng thông tin cư dân** công khai. Đây là **bản cộng đồng** để mỗi khu phố/đơn vị **tự cài trên máy chủ riêng** — không bao gồm phần nền tảng SaaS (đăng ký tập trung, gói dịch vụ, thanh toán, quản trị đa khu phố).
+> Phần mềm quản trị khu phố dành cho **Ban điều hành khu phố & Tổ dân phố**, kèm **Cổng thông tin cư dân** công khai. Khu phố **tự cài trên máy chủ riêng**; toàn bộ dữ liệu nằm trong database của khu phố.
 
 Dự án phi lợi nhuận · chuyển đổi số vì cộng đồng.
+
+> ⚠️ **Phải đăng ký & kích hoạt trước khi dùng.** Mỗi bản cài cần một *key kích hoạt* do tác giả cấp — xem mục [Đăng ký & kích hoạt](#đăng-ký--kích-hoạt).
 
 ---
 
@@ -33,7 +35,7 @@ Dự án phi lợi nhuận · chuyển đổi số vì cộng đồng.
 | CSDL | PostgreSQL 16 + PostGIS (bản đồ), pg_trgm, unaccent, pgcrypto |
 | Frontend | React 19, Vite, TanStack Router/Query, Tailwind CSS, Leaflet |
 
-**Mô hình dữ liệu:** một **database chính** (`qlkp`) giữ tài khoản, vai trò, quyền; và **một database riêng cho mỗi khu phố** (`kp_<slug>`) giữ toàn bộ nghiệp vụ (cư dân, hộ khẩu, quỹ…). Nhờ vậy dữ liệu các khu phố cách ly hoàn toàn ở tầng CSDL.
+**Mô hình dữ liệu:** một **database tài khoản** (`qlkp`) giữ tài khoản, vai trò và quyền; và một **database nghiệp vụ** của khu phố (`kp_<slug>`) giữ toàn bộ dữ liệu (cư dân, hộ khẩu, quỹ…). Tách làm hai lớp để dữ liệu nghiệp vụ nằm gọn trong một database riêng, dễ sao lưu và bàn giao.
 
 ```
 apps/
@@ -48,6 +50,18 @@ apps/
 - PostgreSQL **16** kèm **PostGIS** (và các extension: `pg_trgm`, `unaccent`, `pgcrypto`, `btree_gist`)
 - Python **3.11+**
 - Node.js **20+**
+
+---
+
+## Đăng ký & kích hoạt
+
+Mỗi bản cài phải được **đăng ký với tác giả** để nhận một **key kích hoạt**. Khi chưa có key hợp lệ, API chặn mọi nghiệp vụ (trả `403 PHAN_MEM_CHUA_KICH_HOAT`) và giao diện hiện màn hình hướng dẫn lấy key.
+
+1. **Đăng ký:** vào **https://khuphoso.vn/dang-ky-repo** điền đầy đủ thông tin khu phố (tên khu phố, **mã khu phố / `slug`**, người phụ trách, email, điện thoại…). Hoặc gửi email cho **montacapital2026@gmail.com**.
+2. **Nhận key:** tác giả cấp cho bạn một chuỗi `LICENSE_KEY` khớp đúng mã khu phố của bạn.
+3. **Kích hoạt:** đặt `LICENSE_KEY=…` trong `apps/api/.env` rồi khởi động lại API.
+
+> Key là chuỗi ký bằng chữ ký số **Ed25519** — chỉ tác giả (giữ khoá riêng) ký được, nên không thể tự tạo. Mỗi key gắn với một mã khu phố; không dùng key của khu phố này cho khu phố khác. Kiểm tra trạng thái bất cứ lúc nào tại `GET /giay-phep/trang-thai`.
 
 ---
 
@@ -86,7 +100,7 @@ uvicorn khuphoso.main:app --host 0.0.0.0 --port 8100
 
 Kiểm tra: `GET http://127.0.0.1:8100/health`.
 
-> **Khởi tạo khu phố & tài khoản đầu tiên:** bản cộng đồng giữ mô hình đa khu phố, nên cần thêm một dòng vào bảng `tenant` (slug + tên khu phố), tạo database `kp_<slug>` như trên, và thêm `app_user` + `membership` với vai trò `quan_tri`. Mật khẩu băm bằng `khuphoso.core.security.hash_password`. Có thể viết một script bootstrap nhỏ cho bước này.
+> **Khởi tạo khu phố & tài khoản đầu tiên:** thêm một dòng vào bảng `tenant` (slug + tên khu phố) trong database `qlkp`, tạo database `kp_<slug>` như trên, rồi thêm `app_user` + `membership` với vai trò `quan_tri`. Mật khẩu băm bằng `khuphoso.core.security.hash_password`. Có thể viết một script bootstrap nhỏ cho bước này.
 
 ---
 
@@ -107,7 +121,7 @@ Bản production: phục vụ `dist/` bằng web server (Caddy/Nginx). Mặc đ�
 
 ## Cấu hình (.env)
 
-Xem `apps/api/.env.example`. Các biến quan trọng: `POSTGRES_*`, `SECRET_KEY` (đặt chuỗi ngẫu nhiên dài), `PUBLIC_DOMAIN`, `GOOGLE_MAPS_API_KEY` (tuỳ chọn, cho dò toạ độ).
+Xem `apps/api/.env.example`. Các biến quan trọng: `POSTGRES_*`, `SECRET_KEY` (đặt chuỗi ngẫu nhiên dài), `PUBLIC_DOMAIN`, `LICENSE_KEY` (key kích hoạt — xem [Đăng ký & kích hoạt](#đăng-ký--kích-hoạt)), `GOOGLE_MAPS_API_KEY` (tuỳ chọn, cho dò toạ độ).
 
 File tải lên (ảnh phản ánh, biểu mẫu, ảnh sự kiện) lưu trong thư mục `data/` cạnh tiến trình API.
 

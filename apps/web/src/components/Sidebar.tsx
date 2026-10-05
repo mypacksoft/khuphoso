@@ -1,5 +1,5 @@
 /**
- * Thanh bên 280px — nền tối slate-900, nhấn xanh dương. Bản cộng đồng (một khu phố).
+ * Thanh bên 280px — nền tối slate-900, nhấn xanh dương.
  */
 
 import { Link, useRouterState } from '@tanstack/react-router';

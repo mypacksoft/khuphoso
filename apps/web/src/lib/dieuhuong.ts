@@ -33,8 +33,6 @@ export interface MucCon {
   nhan: string;
   to: string;
   quyen?: string;
-  /** Mã tính năng trong gói dịch vụ — chưa mở thì hiện ổ khoá */
-  goi?: string;
 }
 
 export interface Muc {
@@ -43,13 +41,6 @@ export interface Muc {
   to?: string;
   icon: LucideIcon;
   quyen?: string;
-  /**
-   * Mục thuộc gói trả phí.
-   *
-   * KHOÁ CHỨ KHÔNG GIẤU. Ẩn hẳn thì cán bộ không biết là có, cũng không biết nâng
-   * cấp được gì — hiện kèm ổ khoá vừa trung thực vừa là lời mời.
-   */
-  goi?: string;
   con?: MucCon[];
 }
 
@@ -111,7 +102,6 @@ export const DIEU_HUONG: Muc[] = [
     nhan: 'Dân chủ cơ sở',
     icon: Landmark,
     quyen: 'meeting:read',
-    goi: 'dan_chu',
     con: [
       { nhan: '🗳️ Hội nghị nhân dân', to: '/dan-chu/hoi-nghi' },
       { nhan: '📋 Nội dung công khai', to: '/dan-chu/cong-khai' },
@@ -135,17 +125,16 @@ export const DIEU_HUONG: Muc[] = [
     icon: Navigation,
     quyen: 'household:read',
     con: [
-      { nhan: '🗺️ Bản đồ khu phố', to: '/ban-do', goi: 'ban_do' },
+      { nhan: '🗺️ Bản đồ khu phố', to: '/ban-do' },
       {
         nhan: '📍 Xác minh theo tuyến',
         to: '/xac-minh-tuyen',
         quyen: 'household:write',
-        goi: 'ban_do',
       },
       { nhan: '📣 Phản ánh hiện trường', to: '/phan-anh', quyen: 'resident:read' },
     ],
   },
-  { id: 'quy', nhan: 'Quỹ khu phố', to: '/quy', icon: PiggyBank, quyen: 'fund:read', goi: 'quy' },
+  { id: 'quy', nhan: 'Quỹ khu phố', to: '/quy', icon: PiggyBank, quyen: 'fund:read' },
   {
     id: 'cong-thong-tin',
     nhan: 'Cổng thông tin & Biểu mẫu',

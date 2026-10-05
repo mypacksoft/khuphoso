@@ -28,12 +28,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from khuphoso.core.deps import CurrentUser, get_db, ghi_audit, require
 
 log = structlog.get_logger()
-from khuphoso.core.goi import yeu_cau_goi
 
-# Mục thuộc gói trả phí. Khoá Ở ĐÂY chứ không chỉ giấu menu — giấu menu
-# chỉ cho gọn mắt, ai gõ thẳng địa chỉ vẫn vào được.
-hoi_nghi = APIRouter(prefix="/hoi-nghi", tags=["dân chủ cơ sở"], dependencies=[Depends(yeu_cau_goi("dan_chu"))])
-cong_khai = APIRouter(prefix="/cong-khai", tags=["dân chủ cơ sở"], dependencies=[Depends(yeu_cau_goi("dan_chu"))])
+hoi_nghi = APIRouter(prefix="/hoi-nghi", tags=["dân chủ cơ sở"])
+cong_khai = APIRouter(prefix="/cong-khai", tags=["dân chủ cơ sở"])
 
 TRANG_THAI = {
     "chuan_bi": "Đang chuẩn bị",

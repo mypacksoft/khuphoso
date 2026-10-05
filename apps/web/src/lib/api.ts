@@ -27,18 +27,6 @@ const DUNG_CHUNG = new Set([
   'blog',
 ]);
 
-/**
- * `admin.khuphoso.vn` là bảng điều khiển NỀN TẢNG, không thuộc khu phố nào.
- * Đăng nhập ở đây không kèm khu phố, nên không mở được sổ sách của bất kỳ khu phố nào.
- */
-export const laNenTang = (() => {
-  const h = location.hostname;
-  if (h === 'localhost' || /^\d+\.\d+\.\d+\.\d+$/.test(h)) {
-    return new URLSearchParams(location.search).has('nen-tang');
-  }
-  return h.split('.')[0] === 'admin';
-})();
-
 export function tenantTuHost(): string | null {
   const h = location.hostname;
   if (h === 'localhost' || /^\d+\.\d+\.\d+\.\d+$/.test(h)) return null;

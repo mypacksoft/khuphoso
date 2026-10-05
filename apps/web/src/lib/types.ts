@@ -20,7 +20,6 @@ export interface NguoiDung {
   full_name: string;
   role: string | null;
   permissions: string[];
-  is_platform_admin: boolean;
   must_change_password: boolean;
   last_login_at: string | null;
   ho_tro?: boolean;

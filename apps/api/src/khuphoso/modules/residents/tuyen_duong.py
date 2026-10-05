@@ -30,10 +30,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from khuphoso.core.deps import get_db, require
 
 log = structlog.get_logger()
-from khuphoso.core.goi import yeu_cau_goi
-# Mục thuộc gói trả phí. Khoá Ở ĐÂY chứ không chỉ giấu menu — giấu menu
-# chỉ cho gọn mắt, ai gõ thẳng địa chỉ vẫn vào được.
-router = APIRouter(prefix="/ho-khau/tuyen-duong", tags=["hộ khẩu"], dependencies=[Depends(yeu_cau_goi("ban_do"))])
+
+router = APIRouter(prefix="/ho-khau/tuyen-duong", tags=["hộ khẩu"])
 
 # ── TÁCH ĐỊA CHỈ THÀNH (TUYẾN, SỐ NHÀ) ─────────────────────────────────────
 #

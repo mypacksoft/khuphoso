@@ -3,7 +3,7 @@
  *
  * Trên tên miền riêng của khu phố (`kp3-anphu.khuphoso.vn`) thì khu phố đã xác định
  * theo tên miền — không hỏi lại, chỉ hiện tên để cán bộ biết mình vào đúng chỗ.
- * Trên `app.` / `admin.` dùng chung thì mới phải nhập mã khu phố.
+ * Trên tên miền dùng chung thì mới phải nhập mã khu phố.
  *
  * ── Để trình duyệt và PWA nhớ được tài khoản ────────────────────────────────
  *
@@ -26,7 +26,7 @@ import { Eye, EyeOff, Lock, ShieldAlert, User } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { Input } from '@/components/ui';
-import { auth, laNenTang, tenantCoDinh } from '@/lib/api';
+import { auth, tenantCoDinh } from '@/lib/api';
 import { useAuth } from '@/lib/store';
 
 const KHOA_TEN = 'kp_ten_dang_nhap';
@@ -58,14 +58,12 @@ export function Login() {
   const [username, setUsername] = useState(() => localStorage.getItem(KHOA_TEN) ?? '');
   const [password, setPassword] = useState('');
   const [tenant, setTenant] = useState(tenantCoDinh ?? auth.tenant);
-  // Ở admin.khuphoso.vn thì đăng nhập KHÔNG kèm khu phố nào cả
   const [hienMk, setHienMk] = useState(false);
   const [loi, setLoi] = useState('');
   const [dangGui, setDangGui] = useState(false);
 
   useEffect(() => {
-    // Trang nền tảng không thuộc khu phố nào nên không có tên khu phố để hiện
-    if (!laNenTang) void napKhuPho();
+    void napKhuPho();
   }, [napKhuPho]);
 
   const gui = async (e: React.FormEvent) => {
@@ -74,7 +72,7 @@ export function Login() {
     setDangGui(true);
     try {
       const ten = username.trim();
-      await dangNhap(ten, password, laNenTang ? '' : tenant.trim());
+      await dangNhap(ten, password, tenant.trim());
       localStorage.setItem(KHOA_TEN, ten);
       // Hỏi lưu TRƯỚC khi nạp lại: nạp lại là huỷ luôn hộp thoại đang hiện
       await nhoTaiKhoan(ten, password, khuPho?.name ?? 'KhuPhoSo');
@@ -96,16 +94,14 @@ export function Login() {
         <div className="bg-white/95 backdrop-blur-xl border border-white/50 shadow-2xl rounded-2xl p-6 md:p-8 flex flex-col items-center gap-6">
           <div className="flex flex-col items-center text-center gap-3">
             <div className="w-20 h-20 rounded-2xl bg-gradient-to-tr from-blue-700 to-sky-400 shadow-lg shadow-blue-900/20 flex items-center justify-center">
-              <span className="text-4xl">{laNenTang ? '🛡️' : '🏠'}</span>
+              <span className="text-4xl">🏠</span>
             </div>
             <div className="flex flex-col gap-0.5">
               <h1 className="font-bold text-2xl tracking-tight text-slate-900 uppercase">
-                {laNenTang ? 'Quản trị nền tảng' : (khuPho?.name ?? 'Khu Phố Số')}
+                {khuPho?.name ?? 'Khu Phố Số'}
               </h1>
               <p className="font-extrabold text-xs text-blue-800 tracking-wider uppercase">
-                {laNenTang
-                  ? 'KhuPhoSo · không thuộc khu phố nào'
-                  : (khuPho?.ward ?? 'Hệ thống quản lý dân cư')}
+                {khuPho?.ward ?? 'Hệ thống quản lý dân cư'}
               </p>
             </div>
           </div>
@@ -118,7 +114,7 @@ export function Login() {
               </div>
             )}
 
-            {!tenantCoDinh && !laNenTang && (
+            {!tenantCoDinh && (
               <div className="flex flex-col gap-1.5">
                 <label className="text-xs font-semibold text-slate-700 ml-1">Mã khu phố</label>
                 <Input

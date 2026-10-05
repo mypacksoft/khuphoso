@@ -7,7 +7,7 @@ import {
   RouterProvider,
   useRouterState,
 } from '@tanstack/react-router';
-import { StrictMode, useEffect } from 'react';
+import { StrictMode, useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 
 import { Layout } from '@/components/Layout';
@@ -35,6 +35,7 @@ import { NhatKy } from '@/features/system/NhatKy';
 import { TaiKhoanKhuPho } from '@/features/system/TaiKhoanKhuPho';
 import { ChuyenKhuPho } from '@/features/residents/ChuyenKhuPho';
 import { TongQuan } from '@/features/TongQuan';
+import { GiayPhep, type GiayPhepTrangThai } from '@/features/GiayPhep';
 import { VanBan } from '@/features/vanban/VanBan';
 import { get, ghiLuotXem, tenantCoDinh } from '@/lib/api';
 import { PortalApp } from '@/portal/PortalApp';
@@ -90,6 +91,41 @@ function Cong() {
       <Outlet />
     </Layout>
   );
+}
+
+/**
+ * Cổng kích hoạt — bọc NGOÀI cả trang quản trị lẫn cổng cư dân.
+ *
+ * Hỏi máy chủ phần mềm đã kích hoạt chưa. Chưa thì hiện màn hình hướng dẫn lấy key
+ * thay cho toàn bộ ứng dụng. Việc chặn THẬT nằm ở máy chủ; đây chỉ là giao diện —
+ * nên khi không hỏi được (mạng/CSDL trục trặc) thì vẫn cho dựng ứng dụng, các API
+ * nghiệp vụ sẽ tự trả 403 nếu chưa kích hoạt.
+ */
+function CongKichHoat({ children }: { children: React.ReactNode }) {
+  const [tt, setTt] = useState<GiayPhepTrangThai | null>(null);
+  const [xong, setXong] = useState(false);
+
+  useEffect(() => {
+    void (async () => {
+      try {
+        setTt(await get<GiayPhepTrangThai>('/giay-phep/trang-thai'));
+      } catch {
+        setTt(null);
+      } finally {
+        setXong(true);
+      }
+    })();
+  }, []);
+
+  if (!xong) {
+    return (
+      <div className="min-h-screen grid place-items-center bg-slate-50">
+        <Spinner label="Đang kiểm tra kích hoạt…" />
+      </div>
+    );
+  }
+  if (tt && !tt.kich_hoat) return <GiayPhep tt={tt} />;
+  return <>{children}</>;
 }
 
 const rootRoute = createRootRoute({ component: Cong });
@@ -226,7 +262,9 @@ if ('serviceWorker' in navigator && import.meta.env.PROD) {
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <QueryClientProvider client={qc}>
-      {coPortal && !laQuanLy ? <PortalApp /> : <RouterProvider router={router} />}
+      <CongKichHoat>
+        {coPortal && !laQuanLy ? <PortalApp /> : <RouterProvider router={router} />}
+      </CongKichHoat>
     </QueryClientProvider>
   </StrictMode>,
 );

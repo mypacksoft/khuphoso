@@ -27,7 +27,6 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from khuphoso.core.deps import CurrentUser, KhuPho, get_db, ghi_audit, require, resolve_khu_pho
-from khuphoso.core.goi import yeu_cau_goi
 from khuphoso.core.geocode import LoiCauHinhGeocode, do_toa_do, ten_nha_cung_cap
 
 log = structlog.get_logger()
@@ -93,7 +92,7 @@ async def _luu_ket_qua_do(db: AsyncSession, hid: str, kq, uid: str) -> bool:
 
 
 # --------------------------------------------------------------------------- #
-@router.post("/{hid}/do-vi-tri", dependencies=[Depends(yeu_cau_goi("ban_do"))])
+@router.post("/{hid}/do-vi-tri")
 async def do_vi_tri(
     hid: str,
     request: Request,
@@ -146,7 +145,7 @@ async def do_vi_tri(
     }
 
 
-@router.post("/do-vi-tri-hang-loat", dependencies=[Depends(yeu_cau_goi("ban_do"))])
+@router.post("/do-vi-tri-hang-loat")
 async def do_hang_loat(
     request: Request,
     so_luong: int = Query(default=TOI_DA_MOI_LAN, ge=1, le=TOI_DA_MOI_LAN),
@@ -235,7 +234,7 @@ class XacMinh(BaseModel):
     ghi_chu: str | None = Field(default=None, max_length=300)
 
 
-@router.post("/{hid}/xac-minh", dependencies=[Depends(yeu_cau_goi("ban_do"))])
+@router.post("/{hid}/xac-minh")
 async def xac_minh(
     hid: str,
     body: XacMinh,
